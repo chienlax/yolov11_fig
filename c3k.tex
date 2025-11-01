@@ -1,0 +1,117 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+% Load TikZ libraries for positioning, shapes, arrows, and decorations
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta, decorations.pathreplacing, calc}
+
+% Define custom colors for the gradients and background
+\definecolor{colorConvLeft}{RGB}{218,218,255}    % Light purple
+\definecolor{colorConvRight}{RGB}{204,238,255}   % Light blue
+\definecolor{colorBottleLeft}{RGB}{255,229,180}  % Light yellow
+\definecolor{colorBottleRight}{RGB}{255,217,217} % Light pink
+\definecolor{colorConcatLeft}{RGB}{179,229,252}  % Light cyan
+\definecolor{colorConcatRight}{RGB}{255,170,170} % Light red
+\definecolor{bordercolor}{RGB}{68,84,106}      % Dark slate blue for borders
+\definecolor{bgcolor}{RGB}{245,245,250}         % Light lavender background
+
+\begin{document}
+
+% Use a sans-serif font similar to the one in the image (requires XeLaTeX)
+% TeX Gyre Heros is a free alternative to Helvetica
+\setsansfont{TeX Gyre Heros}
+\sffamily
+
+\begin{tikzpicture}[
+    % Set global options for the diagram
+    node distance=1.5cm and 2.5cm, % Vertical and horizontal spacing between nodes
+    % Define a style for the background color
+    page/.style={
+        background rectangle/.style={fill=bgcolor}, 
+        show background rectangle
+    },
+    % Define a base style for all blocks
+    block/.style={
+        rectangle, 
+        rounded corners=8pt, 
+        draw=bordercolor, 
+        very thick,
+        text=black,
+        font=\sffamily\huge,
+        minimum width=4cm,
+        minimum height=1.2cm,
+        text centered
+    },
+    % Define specific styles for each type of block using color gradients
+    convstyle/.style={
+        block, 
+        left color=colorConvLeft, 
+        right color=colorConvRight
+    },
+    bottlestyle/.style={
+        block, 
+        left color=colorBottleLeft, 
+        right color=colorBottleRight
+    },
+    concatstyle/.style={
+        block, 
+        left color=colorConcatLeft, 
+        right color=colorConcatRight
+    },
+    % Define the style for arrows
+    arrow/.style={
+        -Stealth, % Arrowhead type from arrows.meta library
+        draw=black,
+        very thick
+    },
+    % Style for annotations
+    label/.style={
+        font=\sffamily\huge
+    }
+]
+
+% Apply the background color to the entire picture
+\begin{scope}[page]
+
+% --- Node Placement ---
+% Place nodes relative to each other for a flexible layout
+\node[convstyle]                               (conv1)   {Conv};
+\node[bottlestyle, below=of conv1]             (bottle1) {Bottleneck};
+
+% Position the left 'Conv' node to be vertically between the top two nodes
+\coordinate (midpoint) at ($(conv1.south)!2.!(bottle1.north)$);
+\node[convstyle, left=of midpoint]             (conv3)   {Conv};
+
+\node[bottlestyle, below=of bottle1]           (bottle2) {Bottleneck};
+\node[concatstyle, below=of bottle2]           (concat)  {Concat};
+\node[convstyle, below=of concat]              (conv2)   {Conv};
+
+% Place annotation text nodes
+\node[label, right=0.3cm of conv1] (c3k) {C3k};
+
+% --- Arrow Drawing ---
+% Draw the main vertical connections
+\draw[arrow] (conv1.south)   -- (bottle1.north);
+\draw[arrow] (bottle1.south) -- (bottle2.north);
+\draw[arrow] (bottle2.south) -- (concat.north);
+\draw[arrow] (concat.south)  -- (conv2.north);
+
+% Draw the forked path
+% 1. Define a 'fork_point' on the path between conv1 and bottle1
+\path (conv1.south) -- (bottle1.north) coordinate[pos=0.25] (fork_point);
+% 2. Draw a right-angled arrow from the fork point to the left 'Conv' node
+\draw[arrow] (fork_point) -| (conv3.north);
+% 3. Draw a right-angled arrow from the left 'Conv' node to the 'Concat' node
+\draw[arrow] (conv3.south) |- (concat.west);
+
+% --- Decorations ---
+% Draw the brace for the 'N' annotation
+\draw[decorate, decoration={brace, amplitude=10pt}, very thick, draw=black] 
+    ($(bottle1.east)+(0.3cm,0)$) -- ($(bottle2.east)+(0.3cm,0)$) 
+    node[midway, right=10pt, label] {N};
+
+\end{scope}
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,92 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shadings}
+\usepackage{fontspec}
+
+% Set a modern sans-serif font similar to the one in the image.
+% TeX Gyre Heros is a good open-source alternative to Helvetica.
+% This requires XeLaTeX or LuaLaTeX to compile.
+\setsansfont{TeX Gyre Heros}
+
+\begin{document}
+
+% Define custom colors based on the provided image for accuracy
+\definecolor{diagramBackground}{RGB}{240, 242, 248} % Light grey-blue background (optional, not used per instructions)
+\definecolor{nodeBorder}{RGB}{40, 40, 100}          % Dark blue border for the nodes
+\definecolor{gradientStart}{RGB}{210, 230, 255}     % Light blue for the left side of the gradient
+\definecolor{gradientEnd}{RGB}{230, 220, 255}       % Light purple for the right side of the gradient
+
+% The main TikZ picture environment
+\begin{tikzpicture}[
+    % Set global node distances: 0.7cm vertical and 1cm horizontal
+    node distance=0.7cm and 1cm,
+    % Define a style for the rectangular blocks to avoid repetition
+    block/.style={
+        rectangle,
+        rounded corners=8pt,         % Rounded corners for the blocks
+        draw=nodeBorder,             % Set the border color
+        line width=1.5pt,            % Set the thickness of the border
+        left color=gradientStart,    % Start color for the horizontal gradient
+        right color=gradientEnd,     % End color for the horizontal gradient
+        font=\sffamily\Large,        % Use the sans-serif font, large size
+        text=black,                  % Text color
+        align=center,                % Center-align text (for multi-line nodes)
+        minimum height=1.2cm,        % Minimum height of the blocks
+        text width=2.6cm             % Set a fixed text width for consistent wrapping
+    },
+    % Define a style for the arrows
+    arrow/.style={
+        -Stealth,                    % Use the 'Stealth' arrowhead from the arrows.meta library
+        thick,                       % Make the arrow line thick
+        draw=black                   % Arrow color
+    }
+]
+
+    % --- Place all nodes first ---
+
+    % Row 1
+    \node[block] (b11) {Conv};
+    \node[block, right=of b11] (b12) {Conv};
+    \node[block, right=of b12] (b13) {Conv2d};
+    \node[block, right=of b13] (b14) {Box};
+
+    % Row 2 (placed below Row 1)
+    \node[block, below=of b11] (b21) {DWConv\\Conv};
+    \node[block, right=of b21] (b22) {DWConv\\Conv};
+    \node[block, right=of b22] (b23) {Conv2d};
+    \node[block, right=of b23] (b24) {CLS};
+
+    % Row 3 (placed below Row 2)
+    \node[block, below=of b21] (b31) {Conv};
+    \node[block, right=of b31] (b32) {Conv};
+    \node[block, right=of b32] (b33) {Conv2d};
+    \node[block, right=of b33] (b34) {KeyPoint\\Box};
+
+    % --- Draw all arrows between nodes ---
+
+    % Horizontal arrows for Row 1
+    \draw[arrow] (b11) -- (b12);
+    \draw[arrow] (b12) -- (b13);
+    \draw[arrow] (b13) -- (b14);
+
+    % Horizontal arrows for Row 2
+    \draw[arrow] (b21) -- (b22);
+    \draw[arrow] (b22) -- (b23);
+    \draw[arrow] (b23) -- (b24);
+
+    % Horizontal arrows for Row 3
+    \draw[arrow] (b31) -- (b32);
+    \draw[arrow] (b32) -- (b33);
+    \draw[arrow] (b33) -- (b34);
+
+    % Vertical arrow from the third row to the second row
+    \draw[arrow] (b34.north) -- (b24.south);
+
+    % --- Add the title ---
+    % Place the title centered above the diagram.
+    % A path is used to find the midpoint between the two central top blocks.
+    \path (b12.north) -- (b13.north) node[midway, above=0.8cm] {\sffamily\Huge\bfseries PoseHead};
+
+\end{tikzpicture}
+\end{document}
